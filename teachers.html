@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Регистрация</title>
+</head>
+
+<head th:insert="blocks/head :: head"></head>
+
+<body>
+<div th:insert="blocks/nav :: nav"></div>
+<section class="py-4 py-md-5 my-5">
+    <div class="container py-md-5">
+        <div class="row">
+            <div class="col"></div>
+            <div class="col-4">
+                <h2 class="display-6 fw-bold mb-5 text-center">
+                    <span class="pb-1"><strong>Регистрация</strong></span>
+                </h2>
+
+                <div th:if="${message}" class="alert alert-warning text-center">
+                    <strong th:text="${message}"></strong>
+                </div>
+
+                <form action="/reg" method="post">
+                    <div class="mb-3">
+                        <input class="form-control" required type="text" name="fio" placeholder="ФИО">
+                    </div>
+                    <div class="mb-3">
+                        <select name="role" class="form-select">
+                            <option value="USER">Студент</option>
+                            <option value="MANAGER">Преподаватель</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <input class="form-control" required type="text" name="username" placeholder="Логин">
+                    </div>
+                    <div class="mb-3">
+                        <input class="form-control" required type="password" name="password"
+                               placeholder="Пароль">
+                    </div>
+                    <div class="mb-5">
+                        <button class="btn btn-primary w-100" type="submit">Регистрация</button>
+                    </div>
+                </form>
+
+            </div>
+            <div class="col"></div>
+        </div>
+    </div>
+</section>
+
+<script src="/js/bootstrap.min.js"></script>
+<script src="/js/startup-modern.js"></script>
+
+</body>
+
+</html>

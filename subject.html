@@ -2,7 +2,7 @@
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
 
 <head>
-    <title>Регистрация</title>
+    <title th:text="${subject.name}"></title>
 </head>
 
 <head th:insert="blocks/head :: head"></head>
@@ -10,43 +10,85 @@
 <body>
 <div th:insert="blocks/nav :: nav"></div>
 <section class="py-4 py-md-5 my-5">
-    <div class="container py-md-5">
-        <div class="row">
-            <div class="col"></div>
-            <div class="col-4">
-                <h2 class="display-6 fw-bold mb-5 text-center">
-                    <span class="pb-1"><strong>Регистрация</strong></span>
-                </h2>
+    <div class="container-md py-md-5">
 
-                <div th:if="${message}" class="alert alert-warning text-center">
-                    <strong th:text="${message}"></strong>
-                </div>
+        <h2 class="display-6 fw-bold mb-5 text-center">
+            <span class="pb-1"><strong th:text="${subject.name}"></strong></span>
+        </h2>
 
-                <form action="/reg" method="post">
-                    <div class="mb-3">
-                        <input class="form-control" required type="text" name="fio" placeholder="ФИО">
-                    </div>
-                    <div class="mb-3">
-                        <select name="role" class="form-select">
-                            <option value="USER">Студент</option>
-                            <option value="MANAGER">Преподаватель</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <input class="form-control" required type="text" name="username" placeholder="Логин">
-                    </div>
-                    <div class="mb-3">
-                        <input class="form-control" required type="password" name="password"
-                               placeholder="Пароль">
-                    </div>
-                    <div class="mb-5">
-                        <button class="btn btn-primary w-100" type="submit">Регистрация</button>
-                    </div>
-                </form>
-
-            </div>
-            <div class="col"></div>
+        <div class="mb-5 text-center">
+            <a href="/subjects" class="btn btn-primary">Назад</a>
         </div>
+
+        <form th:action="${'/subjects/' + subjectId + '/edit'}" method="post">
+            <div class="row">
+                <div class="col">
+                    <input type="text" required name="name" placeholder="Название" class="form-control"
+                           th:value="${subject.name}">
+                </div>
+                <div class="col">
+                    <input type="text" readonly th:value="${subject.group.name}" class="form-control">
+                </div>
+                <div class="col-auto">
+                    <button class="btn btn-primary" type="submit">Обновить</button>
+                </div>
+            </div>
+        </form>
+        <hr>
+        <form th:action="${'/subjects/' + subjectId + '/absences/add'}" method="post">
+            <div class="row">
+                <div class="col">
+                    <select name="userId" class="form-select" required>
+                        <option th:each="i : ${subject.group.users}" th:value="${i.id}" th:label="${i.fio}"></option>
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <select name="reason" class="form-select" required>
+                        <option th:each="i : ${reasons}" th:value="${i}" th:label="${i.name}"></option>
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <input type="date" required name="date" class="form-control">
+                </div>
+                <div class="col-auto">
+                    <input type="text" pattern="[124]" required name="count" placeholder="Часов"
+                           class="form-control">
+                </div>
+                <div class="col-auto">
+                    <button class="btn btn-primary" type="submit">Добавить</button>
+                </div>
+            </div>
+        </form>
+        <hr>
+        <form th:each="absence : ${subject.absences}" method="post" class="mb-2"
+              th:action="${'/subjects/' + subjectId + '/absences/' + absence.id + '/edit'}">
+            <div class="row">
+                <div class="col">
+                    <input type="text" readonly class="form-control" th:value="${absence.user.fio}">
+                </div>
+                <div class="col-auto">
+                    <select name="reason" class="form-select" required>
+                        <option th:each="i : ${reasons}" th:value="${i}" th:label="${i.name}"
+                                th:selected="${i == absence.reason}"></option>
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <input type="date" required name="date" class="form-control" th:value="${absence.date}">
+                </div>
+                <div class="col-auto">
+                    <input type="text" pattern="[124]" required name="count" placeholder="Часов"
+                           class="form-control" th:value="${absence.count}">
+                </div>
+                <div class="col-auto">
+                    <button class="btn btn-primary" type="submit">Обновить</button>
+                </div>
+                <div class="col-auto">
+                    <a th:href="${'/subjects/' + subjectId + '/absences/' + absence.id + '/delete'}"
+                       class="btn btn-danger">Удалить</a>
+                </div>
+            </div>
+        </form>
+
     </div>
 </section>
 

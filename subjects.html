@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Предметы</title>
+</head>
+
+<head th:insert="blocks/head :: head"></head>
+
+<body>
+<div th:insert="blocks/nav :: nav"></div>
+<section class="py-4 py-md-5 my-5">
+    <div class="container-md py-md-5">
+        <h2 class="display-6 fw-bold mb-5 text-center">
+            <span class="pb-1"><strong>Предметы</strong></span>
+        </h2>
+
+        <form action="/subjects/add" method="post">
+            <div class="row">
+                <div class="col">
+                    <input type="text" required name="name" placeholder="Название" class="form-control">
+                </div>
+                <div class="col">
+                    <select name="groupId" class="form-select" required>
+                        <option th:each="i : ${groups}" th:value="${i.id}" th:label="${i.name}"></option>
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <button class="btn btn-primary" type="submit">Добавить</button>
+                </div>
+            </div>
+        </form>
+        <hr>
+        <div class="row">
+            <div th:each="i : ${user.subjects}" class="col mb-2">
+                <a th:href="${'/subjects/' + i.id}" class="btn btn-primary w-100"
+                   th:text="${i.name + ' | ' + i.group.name}"></a>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<script src="/js/bootstrap.min.js"></script>
+<script src="/js/startup-modern.js"></script>
+
+</body>
+
+</html>

@@ -1,3 +1,4 @@
+Тестируемый код для функционального требования FR1-1 представлен ниже.
 
 @PostMapping("/add")
 public String addNote(Model model, @RequestParam MultipartFile file, @RequestParam String dateWith, @RequestParam String dateBy) {
@@ -19,6 +20,7 @@ public String addNote(Model model, @RequestParam MultipartFile file, @RequestPar
     return "redirect:/notes";
 }
 
+Тестирующий код для функционального требования FR1-1 представлен ниже.
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,6 +78,56 @@ public class NoteControllerTest {
     }
 }
 
+Тестируемый код для функционального требования FR1-2 представлен ниже.
+
+@GetMapping
+public String notes(Model model) {
+    getCurrentUserAndRole(model);
+    return "notes";
+}
+
+Тестирующий код для функционального требования FR1-2 представлен ниже.
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.ui.Model;
+
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.*;
+
+@RunWith(MockitoJUnitRunner.class)
+public class NotesControllerTest {
+
+    @InjectMocks
+    private NotesController notesController;
+
+    @Mock
+    private Model model;
+
+    @Before
+    public void setUp() {
+        // Здесь можно добавить дополнительную настройку перед каждым тестом
+    }
+
+    @Test
+    public void testNotes() {
+        // Arrange
+        when(notesController.getCurrentUserAndRole(model)).thenReturn(true);
+
+        // Act
+        String viewName = notesController.notes(model);
+
+        // Assert
+        assertEquals("notes", viewName);
+        verify(model, times(1)).addAttribute(anyString(), anyObject());
+    }
+}
+
+Тестируемый код для функционального требования FR2-1 представлен ниже.
 
 @PostMapping("/fio")
 public String fioProfile(@RequestParam String fio) {
@@ -101,7 +153,7 @@ public String emailProfile(@RequestParam String email) {
     return "redirect:/profile";
 }
 
-
+Тестирующий код для функционального требования FR2-1 представлен ниже.
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -145,7 +197,62 @@ public class ProfileControllerTest {
                 .andExpect(MockMvcResultMatchers.redirectedUrl("/profile"));
     }}
 
+Тестируемый код для функционального требования FR2-2 представлен ниже.
 
+@PostMapping("/fio")
+public String fioProfile(@RequestParam String fio) {
+    AppUser user = getUser();
+    user.setFio(fio);
+    userRepo.save(user);
+    return "redirect:/profile";
+}
+
+Тестирующий код для функционального требования FR2-2 представлен ниже.
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.ui.Model;
+
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.*;
+
+@RunWith(MockitoJUnitRunner.class)
+public class UserControllerTest {
+
+    @InjectMocks
+    private UserController userController;
+
+    @Mock
+    private UserRepository userRepo;
+
+    private AppUser mockUser;
+
+    @Before
+    public void setUp() {
+        mockUser = new AppUser();
+    }
+
+    @Test
+    public void testFioProfile() {
+        // Arrange
+        String newFio = "John Doe";
+        when(userController.getUser()).thenReturn(mockUser);
+
+        // Act
+        String viewName = userController.fioProfile(newFio);
+
+        // Assert
+        assertEquals("redirect:/profile", viewName);
+        assertEquals(newFio, mockUser.getFio());
+        verify(userRepo, times(1)).save(mockUser);
+    }
+}
+
+Тестируемый код для функционального требования FR3-1 представлен ниже.
 
 @GetMapping
 public String students(Model model) {
@@ -162,7 +269,7 @@ public String student(Model model, @RequestParam String fio) {
     return "teachers";
 }
 
-
+Тестирующий код для функционального требования FR3-1 представлен ниже.
 
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -232,6 +339,71 @@ public class UserControllerTest {
     }
 }
 
+Тестируемый код для функционального требования FR3-2 представлен ниже.
+
+@GetMapping("/search")
+public String student(Model model, @RequestParam String fio) {
+    getCurrentUserAndRole(model);
+    model.addAttribute("fio", fio);
+    model.addAttribute("teachers", userRepo.findAllByRoleAndFioContaining(Role.MANAGER, fio));
+    return "teachers";
+}
+
+Тестирующий код для функционального требования FR3-2 представлен ниже.
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class ControllerTest {
+
+    @InjectMocks
+    private MyController controller;
+
+    @Mock
+    private UserRepository userRepo;
+
+    @Mock
+    private Model model;
+
+    private List<User> teachers;
+
+    @BeforeEach
+    void setUp() {
+        teachers = new ArrayList<>();
+        teachers.add(new User("John Doe", Role.MANAGER));
+        teachers.add(new User("Jane Smith", Role.MANAGER));
+    }
+
+    @Test
+    void testStudentMethod() {
+        String fio = "Doe";
+        when(userRepo.findAllByRoleAndFioContaining(Role.MANAGER, fio)).thenReturn(teachers);
+        doNothing().when(controller).getCurrentUserAndRole(model);
+
+        String viewName = controller.student(model, fio);
+
+        assertEquals("teachers", viewName);
+        verify(model, times(1)).addAttribute("fio", fio);
+        verify(model, times(1)).addAttribute("teachers", teachers);
+        verify(controller, times(1)).getCurrentUserAndRole(model);
+    }
+}
+
+Тестируемый код для функционального требования FR4-1 представлен ниже.
 
 @PostMapping("/{subjectId}/absences/add")
 public String addAbsence(@PathVariable Long subjectId, @RequestParam Long userId, @RequestParam String date, @RequestParam int count, @RequestParam Reason reason) {
@@ -239,7 +411,7 @@ public String addAbsence(@PathVariable Long subjectId, @RequestParam Long userId
     return "redirect:/subjects/{subjectId}";
 }
 
-
+Тестирующий код для функционального требования FR4-1 представлен ниже.
 
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -293,7 +465,65 @@ public class AbsenceControllerTest {
     }
 }
 
+Тестируемый код для функционального требования FR4-2 представлен ниже.
 
+@PostMapping("/{subjectId}/absences/{absenceId}/edit")
+public String editAbsence(@PathVariable Long subjectId,  @RequestParam String date, @RequestParam int count, @RequestParam Reason reason, @PathVariable Long absenceId) {
+    Absence absence = absenceRepo.getReferenceById(absenceId);
+    absence.set(date, count, reason);
+    absenceRepo.save(absence);
+    return "redirect:/subjects/{subjectId}";
+}
+
+Тестирующий код для функционального требования FR4-2 представлен ниже.
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class ControllerTest {
+
+    @InjectMocks
+    private MyController controller;
+
+    @Mock
+    private AbsenceRepository absenceRepo;
+
+    private Absence absence;
+
+    @BeforeEach
+    void setUp() {
+        absence = new Absence();
+    }
+
+    @Test
+    void testEditAbsenceMethod() {
+        Long subjectId = 1L;
+        String date = "2023-05-01";
+        int count = 3;
+        Reason reason = Reason.ILLNESS;
+        Long absenceId = 2L;
+
+        when(absenceRepo.getReferenceById(absenceId)).thenReturn(absence);
+
+        String viewName = controller.editAbsence(subjectId, date, count, reason, absenceId);
+
+        verify(absence, times(1)).set(date, count, reason);
+        verify(absenceRepo, times(1)).save(absence);
+        assertEquals("redirect:/subjects/" + subjectId, viewName);
+    }
+}
+
+Тестируемый код для функционального требования FR5-1 представлен ниже.
 
 @GetMapping
 public String students(Model model) {
@@ -309,7 +539,7 @@ public String student(Model model, @RequestParam String fio) {
     model.addAttribute("students", userRepo.findAllByRoleAndFioContaining(Role.USER, fio));
     return "students";
 }
-
+Тестирующий код для функционального требования FR5-1 представлен ниже.
 
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -379,7 +609,69 @@ public class UserControllerTest {
     }
 }
 
+Тестируемый код для функционального требования FR5-2 представлен ниже.
 
+@GetMapping("/search")
+public String student(Model model, @RequestParam String fio) {
+    getCurrentUserAndRole(model);
+    model.addAttribute("fio", fio);
+    model.addAttribute("students", userRepo.findAllByRoleAndFioContaining(Role.USER, fio));
+    return "students";
+}
+
+Тестирующий код для функционального требования FR5-2 представлен ниже.
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.ui.Model;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class ControllerTest {
+
+    @InjectMocks
+    private MyController controller;
+
+    @Mock
+    private UserRepository userRepo;
+
+    @Mock
+    private Model model;
+
+    private List<User> students;
+
+    @BeforeEach
+    void setUp() {
+        students = new ArrayList<>();
+        students.add(new User("John Doe", Role.USER));
+        students.add(new User("Jane Smith", Role.USER));
+    }
+
+    @Test
+    void testStudentMethod() {
+        String fio = "Doe";
+        when(userRepo.findAllByRoleAndFioContaining(Role.USER, fio)).thenReturn(students);
+        doNothing().when(controller).getCurrentUserAndRole(model);
+
+        String viewName = controller.student(model, fio);
+
+        assertEquals("students", viewName);
+        verify(model, times(1)).addAttribute("fio", fio);
+        verify(model, times(1)).addAttribute("students", students);
+        verify(controller, times(1)).getCurrentUserAndRole(model);
+    }
+}
+
+Тестируемый код для функционального требования FR6-1 представлен ниже.
 
 @PostMapping("/{subjectId}/absences/{absenceId}/edit")
 public String editAbsence(@PathVariable Long subjectId,  @RequestParam String date, @RequestParam int count, @RequestParam Reason reason, @PathVariable Long absenceId) {
@@ -388,6 +680,7 @@ public String editAbsence(@PathVariable Long subjectId,  @RequestParam String da
     absenceRepo.save(absence);
     return "redirect:/subjects/{subjectId}";
 }
+Тестирующий код для функционального требования FR6-1 представлен ниже.
 
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -436,7 +729,63 @@ public class AbsenceControllerTest {
         verify(absenceRepo).save(any(Absence.class));
     }
 }
+Тестируемый код для функционального требования FR6-2 представлен ниже.
 
+@PostMapping("/{subjectId}/absences/{absenceId}/edit")
+public String editAbsence(@PathVariable Long subjectId,  @RequestParam String date, @RequestParam int count, @RequestParam Reason reason, @PathVariable Long absenceId) {
+    Absence absence = absenceRepo.getReferenceById(absenceId);
+    absence.set(date, count, reason);
+    absenceRepo.save(absence);
+    return "redirect:/subjects/{subjectId}";
+}
+
+Тестирующий код для функционального требования FR6-2 представлен ниже.
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class ControllerTest {
+
+    @InjectMocks
+    private MyController controller;
+
+    @Mock
+    private AbsenceRepository absenceRepo;
+
+    private Absence absence;
+
+    @BeforeEach
+    void setUp() {
+        absence = new Absence();
+    }
+
+    @Test
+    void testEditAbsenceMethod() {
+        Long subjectId = 1L;
+        String date = "2023-05-01";
+        int count = 3;
+        Reason reason = Reason.ILLNESS;
+        Long absenceId = 2L;
+
+        when(absenceRepo.getReferenceById(absenceId)).thenReturn(absence);
+
+        String viewName = controller.editAbsence(subjectId, date, count, reason, absenceId);
+
+        verify(absence, times(1)).set(date, count, reason);
+        verify(absenceRepo, times(1)).save(absence);
+        assertEquals("redirect:/subjects/" + subjectId, viewName);
+    }
+}
+
+Тестируемый код для функционального требования FR7-1 представлен ниже.
 
 @GetMapping
 public String users(Model model) {
@@ -446,6 +795,7 @@ public String users(Model model) {
     return "users";
 }
 
+Тестирующий код для функционального требования FR7-1 представлен ниже.
 
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -493,7 +843,60 @@ public class UserControllerTest {
     }
 }
 
+Тестируемый код для функционального требования FR7-2 представлен ниже.
 
+@GetMapping("/{id}/enable")
+public String enableUser(@PathVariable Long id) {
+    AppUser user = userRepo.getReferenceById(id);
+    user.setEnabled(true);
+    userRepo.save(user);
+    return "redirect:/users";
+}
+
+Тестирующий код для функционального требования FR7-2 представлен ниже.
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class ControllerTest {
+
+    @InjectMocks
+    private MyController controller;
+
+    @Mock
+    private UserRepository userRepo;
+
+    private AppUser user;
+
+    @BeforeEach
+    void setUp() {
+        user = new AppUser();
+        user.setEnabled(false); // initially disabled
+    }
+
+    @Test
+    void testEnableUserMethod() {
+        Long userId = 1L;
+
+        when(userRepo.getReferenceById(userId)).thenReturn(user);
+
+        String viewName = controller.enableUser(userId);
+
+        verify(user, times(1)).setEnabled(true);
+        verify(userRepo, times(1)).save(user);
+        assertEquals("redirect:/users", viewName);
+    }
+}
+
+Тестируемый код для функционального требования FR8-1 представлен ниже.
 
 @PostMapping("/{id}/edit")
 public String editUser(@PathVariable Long id, @RequestParam Role role) {
@@ -503,7 +906,7 @@ public String editUser(@PathVariable Long id, @RequestParam Role role) {
     return "redirect:/users";
 }
 
-
+Тестирующий код для функционального требования FR8-1 представлен ниже.
 
 import static org.mockito.Mockito.*;
 import org.junit.jupiter.api.Test;
@@ -546,7 +949,61 @@ public class UserControllerTest {
     }
 }
 
+Тестируемый код для функционального требования FR8-2 представлен ниже.
 
+@PostMapping("/{id}/edit")
+public String editUser(@PathVariable Long id, @RequestParam Role role) {
+    AppUser user = userRepo.getReferenceById(id);
+    user.setRole(role);
+    userRepo.save(user);
+    return "redirect:/users";
+}
+
+Тестирующий код для функционального требования FR8-2 представлен ниже.
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class ControllerTest {
+
+    @InjectMocks
+    private MyController controller;
+
+    @Mock
+    private UserRepository userRepo;
+
+    private AppUser user;
+
+    @BeforeEach
+    void setUp() {
+        user = new AppUser();
+        user.setRole(Role.USER);
+    }
+
+    @Test
+    void testEditUserMethod() {
+        Long userId = 1L;
+        Role newRole = Role.ADMIN;
+
+        when(userRepo.getReferenceById(userId)).thenReturn(user);
+
+        String viewName = controller.editUser(userId, newRole);
+
+        verify(user, times(1)).setRole(newRole);
+        verify(userRepo, times(1)).save(user);
+        assertEquals("redirect:/users", viewName);
+    }
+}
+
+Тестируемый код для функционального требования FR9-1 представлен ниже.
 
 @GetMapping("/search")
 public String stats(Model model, @RequestParam Long groupId, @RequestParam int year, @RequestParam int month) {
@@ -583,7 +1040,7 @@ public String stats(Model model, @RequestParam Long groupId, @RequestParam int y
     return "stats";
 }
 
-
+Тестирующий код для функционального требования FR9-1 представлен ниже.
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -641,7 +1098,90 @@ public class StatsControllerTest {
     }
 }
 
+Тестируемый код для функционального требования FR9-2 представлен ниже.
 
+@GetMapping
+public String stats(Model model) {
+    getCurrentUserAndRole(model);
+    model.addAttribute("groups", groupRepo.findAll());
+    List<Absence> absences = absenceRepo.findAll();
+
+    absences.sort(Comparator.comparing(Absence::getDate));
+    Collections.reverse(absences);
+
+    model.addAttribute("absences", absences);
+
+    int absencesDisrespectful = 0;
+    int absencesRespectful = 0;
+
+    for (Absence i : absences) {
+        if (i.getReason() == Reason.DISRESPECTFUL) absencesDisrespectful += i.getCount();
+        if (i.getReason() == Reason.RESPECTFUL) absencesRespectful += i.getCount();
+    }
+
+    model.addAttribute("absencesDisrespectful", absencesDisrespectful);
+    model.addAttribute("absencesRespectful", absencesRespectful);
+
+    return "stats";
+}
+
+Тестирующий код для функционального требования FR9-2 представлен ниже.
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.ui.Model;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class ControllerTest {
+
+    @InjectMocks
+    private MyController controller;
+
+    @Mock
+    private GroupRepository groupRepo;
+
+    @Mock
+    private AbsenceRepository absenceRepo;
+
+    @Mock
+    private Model model;
+
+    private List<Absence> absences;
+
+    @BeforeEach
+    void setUp() {
+        absences = new ArrayList<>();
+        absences.add(new Absence("2023-05-01", 3, Reason.DISRESPECTFUL));
+        absences.add(new Absence("2023-05-02", 2, Reason.RESPECTFUL));
+        absences.add(new Absence("2023-05-03", 1, Reason.DISRESPECTFUL));
+    }
+
+    @Test
+    void testStatsMethod() {
+        when(groupRepo.findAll()).thenReturn(new ArrayList<>());
+        when(absenceRepo.findAll()).thenReturn(absences);
+
+        String viewName = controller.stats(model);
+
+        verify(model, times(1)).addAttribute("groups", new ArrayList<>());
+        verify(model, times(1)).addAttribute("absences", absences);
+        verify(model, times(1)).addAttribute("absencesDisrespectful", 4);
+        verify(model, times(1)).addAttribute("absencesRespectful", 2);
+        assertEquals("stats", viewName);
+    }
+}
+
+Тестируемый код для функционального требования FR10-1 представлен ниже.
 
 @PostMapping("/fio")
 public String fioProfile(@RequestParam String fio) {
@@ -651,6 +1191,7 @@ public String fioProfile(@RequestParam String fio) {
     return "redirect:/profile";
 }
 
+Тестирующий код для функционального требования FR10-1 представлен ниже.
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -677,4 +1218,88 @@ public class ProfileControllerTest {
                 .andExpect(MockMvcResultMatchers.redirectedUrl("/profile"));
     }
    
+Тестируемый код для функционального требования FR10-2 представлен ниже.
+
+@PostMapping("/fio")
+public String fioProfile(@RequestParam String fio) {
+    AppUser user = getUser();
+    user.setFio(fio);
+    userRepo.save(user);
+    return "redirect:/profile";
+}
+
+Тестирующий код для функционального требования FR10-2 представлен ниже.
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class ControllerTest {
+
+    @InjectMocks
+    private MyController controller;
+
+    @Mock
+    private UserRepository userRepo;
+
+    @Mock
+    private SecurityContext securityContext;
+
+    @Mock
+    private Authentication authentication;
+
+    @Test
+    void testFioProfileMethod() {
+        String newFio = "John Doe";
+        AppUser user = new AppUser();
+
+        when(controller.getUser()).thenReturn(user);
+
+        String viewName = controller.fioProfile(newFio);
+
+        verify(user, times(1)).setFio(newFio);
+        verify(userRepo, times(1)).save(user);
+        assertEquals("redirect:/profile", viewName);
+    }
+    @Test
+    void testFioProfileMethod() {
+        String newFio = "John Doe";
+        AppUser user = new AppUser();
+
+        when(controller.getUser()).thenReturn(user);
+
+        String viewName = controller.fioProfile(newFio);
+
+        verify(user, times(1)).setFio(newFio);
+        verify(userRepo, times(1)).save(user);
+        assertEquals("redirect:/profile", viewName);
+    }
+
+    @Test
+    void testGetUserMethod() {
+        AppUser expectedUser = new AppUser();
+        expectedUser.setUsername("testuser");
+
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        when(authentication.getPrincipal()).thenReturn(expectedUser);
+
+        AppUser actualUser = controller.getUser();
+
+        assertEquals(expectedUser, actualUser);
+    }
+}
+
 Далее с помощью созданных юнит-тестов будет определена оценка тестового покрытия кода.
+
+
